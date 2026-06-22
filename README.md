@@ -1,110 +1,103 @@
-Task Marketplace API (FastAPI)
+# Task Marketplace API
 
-A backend system for a task marketplace built with FastAPI, SQLAlchemy, and JWT authentication. The project provides user registration, authentication, and protected endpoints with role-based structure.
+A backend REST API for a freelance task marketplace. Users can post tasks, assign executors, leave comments, and manage wallets.
 
-Tech Stack
-FastAPI
-SQLAlchemy (ORM)
-PostgreSQL
-Pydantic
-JWT (python-jose)
-Passlib (bcrypt)
-Uvicorn
+> **This is the initial commit.** Includes project foundation: models, database setup, core configuration, and security utilities. API routes are not yet implemented.
 
+---
 
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | FastAPI |
+| ORM | SQLAlchemy |
+| Database | PostgreSQL |
+| Validation | Pydantic v2 |
+| Auth | JWT (python-jose) |
+| Hashing | Passlib (bcrypt) |
+| Server | Uvicorn |
+
+---
+
+## Project Structure
+
+```
 app/
-│
-├── main.py              # Application entry point
-│
-├── api/
-│   └── auth.py         # Authentication routes (login/register)
-│
+├── main.py                 # FastAPI app instance
 ├── core/
-│   ├── config.py       # Environment settings
-│   ├── security.py     # JWT + password hashing logic
-│   └── deps.py         # Dependencies (DB session, auth)
-│
+│   ├── config.py           # Environment settings
+│   ├── security.py         # JWT + bcrypt utilities
+│   └── deps.py             # DB session & auth dependencies
 ├── database/
-│   └── session.py      # SQLAlchemy engine and session setup
-│
-├── models/
-│   ├── user.py         # User model
-│   ├── wallet.py       # Wallet model
-│   ├── task.py         # Task model
-│   └── comment.py      # Comment model
+│   └── session.py          # SQLAlchemy engine and session factory
+└── models/
+    ├── user.py
+    ├── wallet.py
+    ├── task.py
+    └── comment.py
+```
 
+---
 
+## Database Models
 
-Database Models:
+### User
+| Field | Type | Description |
+|---|---|---|
+| `id` | Integer PK | Primary key |
+| `email` | String, unique | User email |
+| `hashed_password` | String | bcrypt hash |
+| `role` | String | `executor` or `admin` |
+| `created_at` | DateTime | Auto-set on creation |
 
-User
+### Wallet
+| Field | Type | Description |
+|---|---|---|
+| `id` | Integer PK | Primary key |
+| `user_id` | FK → User | Owner |
+| `balance` | Numeric | Current balance |
 
-Represents system users.
+### Task
+| Field | Type | Description |
+|---|---|---|
+| `id` | Integer PK | Primary key |
+| `title` | String | Task title |
+| `description` | Text | Full description |
+| `status` | Enum | `new` / `in_progress` / `done` |
+| `price` | Numeric | Reward amount |
+| `creator_id` | FK → User | Posted by |
+| `executor_id` | FK → User (nullable) | Assigned to |
 
-Fields:
+### Comment
+| Field | Type | Description |
+|---|---|---|
+| `id` | Integer PK | Primary key |
+| `text` | Text | Comment body |
+| `task_id` | FK → Task | Parent task |
+| `user_id` | FK → User | Author |
+| `created_at` | DateTime | Auto-set on creation |
 
-id — primary key
-email — unique user email
-hashed_password — hashed password (bcrypt)
-role — user role (e.g. executor, admin)
-created_at — timestamp of creation
+---
 
-Relationships:
+## Getting Started
 
-wallet → one-to-one or one-to-many
-tasks (as creator or executor)
-comments
+### Prerequisites
 
+- Python 3.10+
+- PostgreSQL
+- `.env` file based on `.env.example`
 
-Wallet
+### Install & Run
 
-Represents a user's balance.
+```bash
+git clone https://github.com/your-username/task-marketplace-api.git
+cd task-marketplace-api
 
-Fields:
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-id
-balance — numeric balance
-user_id — foreign key to User
+pip install -r requirements.txt
 
-Relationship:
-
-Belongs to User
-
-
-Task
-
-Represents a marketplace task.
-
-Fields:
-
-id
-title
-description
-status (new / in_progress / done)
-price
-creator_id — FK to User
-executor_id — FK to User (optional)
-
-Relationships:
-
-Created by User
-Assigned to User
-Has many comments
-
-
-Comment
-
-Represents task comments.
-
-Fields:
-
-id
-text
-task_id — FK to Task
-user_id — FK to User
-created_at
-
-Relationships:
-
-Belongs to Task
-Belongs to User
+uvicorn app.main:app --reload
+```
