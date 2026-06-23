@@ -28,16 +28,16 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
     return jwt.encode(
         to_encode,
-        settings.SECRET_KEY,
+        settings.SECRET_KEY.get_secret_value(),
         algorithm=settings.ALGORITHM,
-    )
+    )   
 
 
 def decode_token(token: str):
     try:
         return jwt.decode(
             token,
-            settings.SECRET_KEY,
+            settings.SECRET_KEY.get_secret_value(),
             algorithms=[settings.ALGORITHM],
         )
     except JWTError:
