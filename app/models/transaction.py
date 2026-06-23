@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, String, DateTime, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database.session import Base
+from app.core.database import Base
 
 
 class Transaction(Base):

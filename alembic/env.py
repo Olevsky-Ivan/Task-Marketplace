@@ -26,7 +26,6 @@ from app.models.transaction import Transaction
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -40,7 +39,6 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
     connect_args = {}
     db_url = config.get_main_option("sqlalchemy.url")
     if db_url and "postgresql" in db_url:

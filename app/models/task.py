@@ -1,6 +1,6 @@
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.database.session import Base
+from app.core.database import Base
 
 
 class Task(Base):
@@ -17,7 +17,6 @@ class Task(Base):
         default="open"
     )
 
-    # 🔴 ВАЖЛИВІ ПОЛЯ (їх у тебе НЕ було)
     creator_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
         nullable=False
@@ -27,8 +26,6 @@ class Task(Base):
         ForeignKey("users.id"),
         nullable=True
     )
-
-    # --- RELATIONS ---
 
     creator = relationship(
         "User",
