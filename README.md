@@ -21,16 +21,20 @@ Users can create tasks, execute them, leave comments and manage the balance thro
 ## Architecture
 
 
-app
+app/
+│
 ├── main.py
-├── core
+│
+├── core/
 │   ├── config.py
 │   ├── security.py
 │   └── deps.py
-├── database
+│
+├── database/
 │   ├── base.py
 │   └── session.py
-├── models
+│
+├── models/
 │   ├── user.py
 │   ├── wallet.py
 │   ├── task.py
@@ -38,19 +42,23 @@ app
 │   ├── category.py
 │   ├── transaction.py
 │   └── attachment.py
-├── auth
+│
+├── auth/
 │   ├── router.py
 │   ├── service.py
 │   └── schemas.py
-├── users
-│   ├── router.py
-│   ├── service.py
-│   ├── repository.py
-│   └── schemas.py
-├── tasks
+│
+├── users/
 │   ├── router.py
 │   ├── service.py
 │   ├── repository.py
 │   └── schemas.py
-└── repositories
+│
+├── tasks/
+│   ├── router.py
+│   ├── service.py
+│   ├── repository.py
+│   └── schemas.py
+│
+└── repositories/
     └── base.py
