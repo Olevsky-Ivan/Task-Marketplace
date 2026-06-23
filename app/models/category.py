@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database.session import Base
+from app.database.base import Base
 
 
 class Category(Base):

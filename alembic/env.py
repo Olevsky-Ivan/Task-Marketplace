@@ -5,23 +5,24 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
+
+from app.database.base import Base
+from app.models.user import User
+from app.models.task import Task
+from app.models.wallet import Wallet
+from app.models.transaction import Transaction
+
+
 load_dotenv()
 
-# This is the Alembic Config object
 config = context.config
 
 if os.getenv("DATABASE_URL"):
     config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
-# Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from app.database.session import Base
-from app.models.user import User
-from app.models.task import Task
-from app.models.wallet import Wallet
-from app.models.transaction import Transaction
 
 target_metadata = Base.metadata
 

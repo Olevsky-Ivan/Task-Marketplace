@@ -3,8 +3,7 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
-
+from app.database.base import Base
 
 class Wallet(Base):
     __tablename__ = "wallets"
