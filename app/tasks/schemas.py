@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 
+
 class CategoryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -12,6 +13,15 @@ class CategoryRead(BaseModel):
 class CategoryCreate(BaseModel):
     name: str
 
+
+class TagRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+
+
+class TagCreate(BaseModel):
+    name: str
 
 
 class TaskStatus(str, Enum):
@@ -25,8 +35,9 @@ class TaskStatus(str, Enum):
 class TaskCreate(BaseModel):
     title: str
     description: str | None = None
-    reward: float  # amount being frozen
+    reward: float
     category_id: int | None = None
+    tag_ids: list[int] = []
 
 
 class TaskUpdate(BaseModel):
@@ -47,6 +58,8 @@ class TaskRead(BaseModel):
     created_at: datetime
     category_id: int | None
     category: CategoryRead | None
+    tags: list[TagRead] = []
+
 
 class TaskFilter(BaseModel):
     status: TaskStatus | None = None

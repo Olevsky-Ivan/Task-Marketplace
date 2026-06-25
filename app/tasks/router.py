@@ -12,6 +12,7 @@ from app.tasks.schemas import (
     TaskCreate, TaskUpdate, TaskRead, TaskFilter,
     CategoryCreate, CategoryRead,
     CommentCreate, CommentRead,
+    TagCreate, TagRead,
 )
 from app.wallet.service import WalletService
 from app.wallet.repository import WalletRepository
@@ -22,6 +23,32 @@ task_service = TaskService(
     task_repository=TaskRepository(),
     wallet_service=WalletService(repository=WalletRepository()),
 )
+
+
+@router.get("/tags", response_model=list[TagRead])
+async def get_tags(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await task_service.get_tags(db)
+
+
+@router.post("/tags", response_model=TagRead)
+async def create_tag(
+    body: TagCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await task_service.create_tag(db, body, current_user)
+
+
+@router.delete("/tags/{tag_id}", status_code=204)
+async def delete_tag(
+    tag_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await task_service.delete_tag(db, tag_id, current_user)
 
 
 @router.get("/categories", response_model=list[CategoryRead])
@@ -70,12 +97,7 @@ async def get_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    filters = TaskFilter(
-        status=status,
-        creator_id=creator_id,
-        date_from=date_from,
-        date_to=date_to,
-    )
+    filters = TaskFilter(status=status, creator_id=creator_id, date_from=date_from, date_to=date_to)
     return await task_service.get_tasks(db, filters, limit, offset)
 
 
