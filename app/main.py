@@ -1,35 +1,18 @@
-from fastapi import FastAPI, Depends
-
-from app.database.base import Base
-from app.database.session import engine
+from fastapi import FastAPI
 
 from app.auth.router import router as auth_router
-from app.core.deps import get_current_user
-from app.models.user import User
+from app.users.router import router as users_router
+from app.tasks.router import router as tasks_router
+from app.wallet.router import router as wallet_router
 
-app = FastAPI(
-    title="Task Wallet System",
-    version="1.0.0",
-)
-
-
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
-
+app = FastAPI(title="Task Wallet System", version="1.0.0")
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(tasks_router, prefix="/tasks", tags=["tasks"])
+app.include_router(wallet_router, prefix="/wallet", tags=["wallet"])
 
 
 @app.get("/")
 def root():
     return {"message": "API works"}
-
-
-@app.get("/me")
-def me(user: User = Depends(get_current_user)):
-    return {
-        "id": user.id,
-        "email": user.email,
-        "role": user.role,
-    }

@@ -1,6 +1,12 @@
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
+from app.models.category import Category
+
+from decimal import Decimal
+from sqlalchemy import Numeric, DateTime
+
+from datetime import datetime, timezone
 
 
 class Task(Base):
@@ -15,6 +21,11 @@ class Task(Base):
     status: Mapped[str] = mapped_column(
         String(50),
         default="open"
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
     )
 
     creator_id: Mapped[int] = mapped_column(
@@ -48,3 +59,12 @@ class Task(Base):
         "Comment",
         back_populates="task"
     )
+    
+    reward: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id"),
+        nullable=True
+    )
+
+    category = relationship("Category")
