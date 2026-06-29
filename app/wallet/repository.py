@@ -10,9 +10,7 @@ from app.models.transaction import Transaction
 class WalletRepository:
 
     async def get_by_user_id(self, db: AsyncSession, user_id: int) -> Wallet | None:
-        result = await db.execute(
-            select(Wallet).where(Wallet.user_id == user_id)
-        )
+        result = await db.execute(select(Wallet).where(Wallet.user_id == user_id))
         return result.scalar_one_or_none()
 
     async def create_wallet(self, db: AsyncSession, user_id: int) -> Wallet:

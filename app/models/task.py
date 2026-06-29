@@ -25,8 +25,16 @@ class Task(Base):
     reward: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=True)
 
-    creator = relationship("User", back_populates="tasks_created", foreign_keys=[creator_id])
-    executor = relationship("User", back_populates="tasks_assigned", foreign_keys=[executor_id])
+    creator = relationship(
+        "User", back_populates="tasks_created", foreign_keys=[creator_id]
+    )
+    executor = relationship(
+        "User", back_populates="tasks_assigned", foreign_keys=[executor_id]
+    )
     comments = relationship("Comment", back_populates="task")
-    category = relationship("Category")
+    attachments = relationship("Attachment", back_populates="task")
+    category = relationship(
+        "Category",
+        lazy="selectin",
+    )
     tags = relationship("Tag", secondary=task_tags, lazy="selectin")

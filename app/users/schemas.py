@@ -8,7 +8,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    role: UserRole = UserRole.EXECUTOR
 
 
 class UserRead(UserBase):
@@ -23,6 +22,5 @@ class UserUpdate(BaseModel):
     password: str | None = None
 
 
-# PUT /users/{id}/role (only admin)
-class UserRoleUpdate(BaseModel):  
+class UserRoleUpdate(BaseModel):
     role: UserRole

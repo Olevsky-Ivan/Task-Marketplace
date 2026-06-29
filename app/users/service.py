@@ -22,7 +22,6 @@ class UserService:
         user = User(
             email=user_data.email,
             hashed_password=await hash_password_async(user_data.password),
-            role=user_data.role,
         )
 
         await self.repository.create(db, user)
@@ -49,7 +48,9 @@ class UserService:
         await db.commit()
         return result
 
-    async def update_role(self, db: AsyncSession, user_id: int, data: UserRoleUpdate) -> User:
+    async def update_role(
+        self, db: AsyncSession, user_id: int, data: UserRoleUpdate
+    ) -> User:
         user = await self.get_user_by_id(db, user_id)
         result = await self.repository.update_role_user(db, user, data.role)
         await db.commit()
@@ -58,5 +59,7 @@ class UserService:
     async def get_assigned_tasks(self, db: AsyncSession, user_id: int):
         user = await self.get_user_by_id(db, user_id)
         if user.role != UserRole.EXECUTOR:
-            raise HTTPException(status_code=403, detail="Only executors have assigned tasks")
+            raise HTTPException(
+                status_code=403, detail="Only executors have assigned tasks"
+            )
         return await self.repository.get_assigned_tasks(db, user_id)

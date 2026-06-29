@@ -15,9 +15,7 @@ class WalletRead(BaseModel):
 class DepositRequest(BaseModel):
     amount: Decimal
 
-    model_config = ConfigDict(
-        json_schema_extra={"example": {"amount": "100.00"}}
-    )
+    model_config = ConfigDict(json_schema_extra={"example": {"amount": "100.00"}})
 
 
 class TransactionRead(BaseModel):

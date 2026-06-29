@@ -35,7 +35,10 @@ class WalletService:
 
         wallet.balance += amount
         await self.repository.create_transaction(
-            db, wallet.id, amount, "deposit",
+            db,
+            wallet.id,
+            amount,
+            "deposit",
             description="Manual deposit",
         )
 
@@ -56,7 +59,10 @@ class WalletService:
         wallet.frozen_balance += amount
 
         await self.repository.create_transaction(
-            db, wallet.id, amount, "freeze",
+            db,
+            wallet.id,
+            amount,
+            "freeze",
             description="Funds frozen for task",
         )
 
@@ -76,13 +82,19 @@ class WalletService:
 
         customer_wallet.frozen_balance -= amount
         await self.repository.create_transaction(
-            db, customer_wallet.id, -amount, "transfer_out",
+            db,
+            customer_wallet.id,
+            -amount,
+            "transfer_out",
             description=f"Payment for task #{task_id}",
         )
 
         executor_wallet.balance += amount
         await self.repository.create_transaction(
-            db, executor_wallet.id, amount, "transfer_in",
+            db,
+            executor_wallet.id,
+            amount,
+            "transfer_in",
             description=f"Payment for task #{task_id}",
         )
 
@@ -101,7 +113,10 @@ class WalletService:
         wallet.balance += amount
 
         await self.repository.create_transaction(
-            db, wallet.id, amount, "unfreeze",
+            db,
+            wallet.id,
+            amount,
+            "unfreeze",
             description="Funds returned after task cancellation",
         )
 

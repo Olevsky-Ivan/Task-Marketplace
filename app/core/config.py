@@ -13,8 +13,10 @@ class Settings(BaseSettings):
 
     SECRET_KEY: SecretStr
     ALGORITHM: str = "HS256"
-
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    ADMIN_EMAIL: str
+    ADMIN_PASSWORD: str
 
 
 settings = Settings()

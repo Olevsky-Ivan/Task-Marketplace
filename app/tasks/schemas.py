@@ -80,3 +80,14 @@ class CommentRead(BaseModel):
     user_id: int
     task_id: int
     created_at: datetime
+
+
+class AttachmentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    file_url: str
+    original_name: str
+    uploaded_by: int
+    task_id: int
+    created_at: datetime

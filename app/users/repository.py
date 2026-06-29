@@ -36,14 +36,14 @@ class UserRepository:
         await db.refresh(user)
         return user
 
-    async def update_role_user(self, db: AsyncSession, user: User, role: UserRole) -> User:
+    async def update_role_user(
+        self, db: AsyncSession, user: User, role: UserRole
+    ) -> User:
         user.role = role
         await db.flush()
         await db.refresh(user)
         return user
 
     async def get_assigned_tasks(self, db: AsyncSession, user_id: int) -> list[Task]:
-        result = await db.execute(
-            select(Task).where(Task.executor_id == user_id)
-        )
+        result = await db.execute(select(Task).where(Task.executor_id == user_id))
         return result.scalars().all()
