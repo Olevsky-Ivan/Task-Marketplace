@@ -25,8 +25,9 @@ def get_url(driver: str = "asyncpg") -> str:
     if not url:
         raise ValueError("DATABASE_URL не встановлено в .env")
 
-    url = url.replace("postgresql+asyncpg://", "postgresql://") \
-              .replace("postgresql+psycopg2://", "postgresql://")
+    url = url.replace("postgresql+asyncpg://", "postgresql://").replace(
+        "postgresql+psycopg2://", "postgresql://"
+    )
 
     if driver == "asyncpg":
         return url.replace("postgresql://", "postgresql+asyncpg://")
@@ -43,7 +44,6 @@ def run_migrations_offline() -> None:
     )
     with context.begin_transaction():
         context.run_migrations()
-
 
 
 def do_run_migrations(connection) -> None:
@@ -66,7 +66,6 @@ async def run_migrations_online() -> None:
         await connection.run_sync(do_run_migrations)
 
     await engine.dispose()
-
 
 
 if context.is_offline_mode():

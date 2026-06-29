@@ -4,7 +4,10 @@ from sqlalchemy import select
 from app.models.task import Task
 from app.models.category import Category
 from app.models.comment import Comment
+from app.models.tag import Tag
 from app.tasks.schemas import TaskFilter
+from app.models.attachment import Attachment
+from sqlalchemy.orm import selectinload
 
 
 class TaskRepository:
@@ -16,7 +19,15 @@ class TaskRepository:
         return task
 
     async def get_by_id(self, db: AsyncSession, task_id: int) -> Task | None:
-        return await db.get(Task, task_id)
+        result = await db.execute(
+            select(Task)
+            .options(
+                selectinload(Task.category),
+                selectinload(Task.tags),
+            )
+            .where(Task.id == task_id)
+        )
+        return result.scalar_one_or_none()
 
     async def get_all_filtered(
         self,
@@ -25,7 +36,10 @@ class TaskRepository:
         limit: int,
         offset: int,
     ) -> list[Task]:
-        query = select(Task)
+        query = select(Task).options(
+            selectinload(Task.category),
+            selectinload(Task.tags),
+        )
 
         if filters.status is not None:
             query = query.where(Task.status == filters.status)
@@ -37,7 +51,6 @@ class TaskRepository:
             query = query.where(Task.created_at <= filters.date_to)
 
         query = query.limit(limit).offset(offset)
-
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -46,7 +59,6 @@ class TaskRepository:
             task.title = data.title
         if data.description is not None:
             task.description = data.description
-
         await db.flush()
         await db.refresh(task)
         return task
@@ -55,7 +67,9 @@ class TaskRepository:
         await db.delete(task)
         await db.flush()
 
-    async def set_executor(self, db: AsyncSession, task: Task, executor_id: int) -> Task:
+    async def set_executor(
+        self, db: AsyncSession, task: Task, executor_id: int
+    ) -> Task:
         task.executor_id = executor_id
         task.status = "in_progress"
         await db.flush()
@@ -68,12 +82,35 @@ class TaskRepository:
         await db.refresh(task)
         return task
 
+    async def get_tags_by_ids(self, db: AsyncSession, tag_ids: list[int]) -> list[Tag]:
+        result = await db.execute(select(Tag).where(Tag.id.in_(tag_ids)))
+        return result.scalars().all()
+
+    async def get_all_tags(self, db: AsyncSession) -> list[Tag]:
+        result = await db.execute(select(Tag))
+        return result.scalars().all()
+
+    async def create_tag(self, db: AsyncSession, name: str) -> Tag:
+        tag = Tag(name=name)
+        db.add(tag)
+        await db.flush()
+        await db.refresh(tag)
+        return tag
+
+    async def delete_tag(self, db: AsyncSession, tag: Tag) -> None:
+        await db.delete(tag)
+        await db.flush()
+
+    async def get_tag_by_id(self, db: AsyncSession, tag_id: int) -> Tag | None:
+        return await db.get(Tag, tag_id)
 
     async def get_all_categories(self, db: AsyncSession) -> list[Category]:
         result = await db.execute(select(Category))
         return result.scalars().all()
 
-    async def get_category_by_id(self, db: AsyncSession, category_id: int) -> Category | None:
+    async def get_category_by_id(
+        self, db: AsyncSession, category_id: int
+    ) -> Category | None:
         return await db.get(Category, category_id)
 
     async def create_category(self, db: AsyncSession, name: str) -> Category:
@@ -87,7 +124,6 @@ class TaskRepository:
         await db.delete(category)
         await db.flush()
 
-
     async def get_comments(self, db: AsyncSession, task_id: int) -> list[Comment]:
         result = await db.execute(
             select(Comment)
@@ -97,11 +133,7 @@ class TaskRepository:
         return result.scalars().all()
 
     async def create_comment(
-        self,
-        db: AsyncSession,
-        task_id: int,
-        user_id: int,
-        text: str,
+        self, db: AsyncSession, task_id: int, user_id: int, text: str
     ) -> Comment:
         comment = Comment(task_id=task_id, user_id=user_id, text=text)
         db.add(comment)
@@ -109,9 +141,45 @@ class TaskRepository:
         await db.refresh(comment)
         return comment
 
-    async def get_comment_by_id(self, db: AsyncSession, comment_id: int) -> Comment | None:
+    async def get_comment_by_id(
+        self, db: AsyncSession, comment_id: int
+    ) -> Comment | None:
         return await db.get(Comment, comment_id)
 
     async def delete_comment(self, db: AsyncSession, comment: Comment) -> None:
         await db.delete(comment)
+        await db.flush()
+
+    async def get_attachments(self, db: AsyncSession, task_id: int) -> list[Attachment]:
+        result = await db.execute(
+            select(Attachment).where(Attachment.task_id == task_id)
+        )
+        return result.scalars().all()
+
+    async def create_attachment(
+        self,
+        db: AsyncSession,
+        task_id: int,
+        user_id: int,
+        file_url: str,
+        original_name: str,
+    ) -> Attachment:
+        attachment = Attachment(
+            task_id=task_id,
+            uploaded_by=user_id,
+            file_url=file_url,
+            original_name=original_name,
+        )
+        db.add(attachment)
+        await db.flush()
+        await db.refresh(attachment)
+        return attachment
+
+    async def get_attachment_by_id(
+        self, db: AsyncSession, attachment_id: int
+    ) -> Attachment | None:
+        return await db.get(Attachment, attachment_id)
+
+    async def delete_attachment(self, db: AsyncSession, attachment: Attachment) -> None:
+        await db.delete(attachment)
         await db.flush()

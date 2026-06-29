@@ -2,6 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException
 
 from app.core.deps import get_current_user
 from app.database.session import get_db
@@ -9,12 +10,24 @@ from app.models.user import User
 from app.tasks.service import TaskService
 from app.tasks.repository import TaskRepository
 from app.tasks.schemas import (
-    TaskCreate, TaskUpdate, TaskRead, TaskFilter,
-    CategoryCreate, CategoryRead,
-    CommentCreate, CommentRead,
+    TaskCreate,
+    TaskUpdate,
+    TaskRead,
+    TaskFilter,
+    CategoryCreate,
+    CategoryRead,
+    CommentCreate,
+    CommentRead,
+    TagCreate,
+    TagRead,
 )
 from app.wallet.service import WalletService
 from app.wallet.repository import WalletRepository
+from fastapi import File, UploadFile
+from app.tasks.schemas import AttachmentRead
+
+ALLOWED_TYPES = {"image/jpeg", "image/png", "application/pdf", "image/gif"}
+MAX_SIZE = 5 * 1024 * 1024  # 5MB
 
 router = APIRouter()
 
@@ -22,6 +35,32 @@ task_service = TaskService(
     task_repository=TaskRepository(),
     wallet_service=WalletService(repository=WalletRepository()),
 )
+
+
+@router.get("/tags", response_model=list[TagRead])
+async def get_tags(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await task_service.get_tags(db)
+
+
+@router.post("/tags", response_model=TagRead)
+async def create_tag(
+    body: TagCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await task_service.create_tag(db, body, current_user)
+
+
+@router.delete("/tags/{tag_id}", status_code=204)
+async def delete_tag(
+    tag_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await task_service.delete_tag(db, tag_id, current_user)
 
 
 @router.get("/categories", response_model=list[CategoryRead])
@@ -71,10 +110,7 @@ async def get_tasks(
     current_user: User = Depends(get_current_user),
 ):
     filters = TaskFilter(
-        status=status,
-        creator_id=creator_id,
-        date_from=date_from,
-        date_to=date_to,
+        status=status, creator_id=creator_id, date_from=date_from, date_to=date_to
     )
     return await task_service.get_tasks(db, filters, limit, offset)
 
@@ -179,3 +215,40 @@ async def delete_comment(
     current_user: User = Depends(get_current_user),
 ):
     await task_service.delete_comment(db, task_id, comment_id, current_user)
+
+
+@router.get("/{task_id}/attachments", response_model=list[AttachmentRead])
+async def get_attachments(
+    task_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await task_service.get_attachments(db, task_id)
+
+
+@router.post("/{task_id}/attachments", response_model=AttachmentRead)
+async def add_attachment(
+    task_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="File type not allowed")
+
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    await file.seek(0)
+
+    return await task_service.add_attachment(db, task_id, file, current_user)
+
+
+@router.delete("/{task_id}/attachments/{attachment_id}", status_code=204)
+async def delete_attachment(
+    task_id: int,
+    attachment_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await task_service.delete_attachment(db, task_id, attachment_id, current_user)
