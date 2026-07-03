@@ -57,3 +57,15 @@ class WalletRepository:
             .offset(offset)
         )
         return result.scalars().all()
+
+    async def get_by_user_id_for_update(
+        self,
+        db: AsyncSession,
+        user_id: int,
+    ) -> Wallet | None:
+        result = await db.execute(
+            select(Wallet)
+            .where(Wallet.user_id == user_id)
+            .with_for_update()
+        )
+        return result.scalar_one_or_none()
